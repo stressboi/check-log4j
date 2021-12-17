@@ -98,7 +98,7 @@ checkFilesystem() {
 	fi
 
 	verbose "Searching for jars/wars on the filesystem..." 3
-	newjars=$(find "${SEARCH_PATHS:-/}" -type f -name '*.[jw]ar' 2>/dev/null || true)
+	newjars=$(find "${SEARCH_PATHS:-/}" -type f -name '*.[ejw]ar' 2>/dev/null || true)
 	FOUND_JARS="${FOUND_JARS:+${FOUND_JARS} }${newjars}"
 
 	verbose "Searching for ${FATAL_CLASS} on the filesystem..." 3
@@ -121,7 +121,7 @@ checkFixedVersion() {
 	local dir=""
 
 	set +e
-	if [ x"${suffix}" = x"jar" -o x"${suffix}" = x"war" ]; then
+	if [ x"${suffix##*[ejw]}" = x"ar" ]; then
 		if [ -z "${UNZIP}" ]; then
 			warn "Unable to check if ${suffix} contains a fixed version since unzip(1) is miggin."
 			return
@@ -192,12 +192,13 @@ checkInJar() {
 
 		okVersion="$(checkFixedVersion "${jar}")"
 
+		# We're specifically looking for a jar, so no need to match .[ew]ar # here.
 		match="$(echo "${jar}" | sed -n -e "s|.*/\(${KNOWN_DISABLED}[0-9.]*.jar\)$|\1|p")"
 		if [ -n "${match}" -o -n "${okVersion}" ]; then
 			if [ -n "${flags}" ]; then
 				log "Normally NON-VULNERABLE_ARCHIVE='${jar}'${msg} found, but ${flags}!"
 			fi
-			verbose "Allowing archive with known disabled JNDI Lookup." 6
+			verbose "Allowing archive '${jar}' with known disabled JNDI Lookup." 6
 			return
 		fi
 		if [ -z "${flags}" ]; then
@@ -228,7 +229,7 @@ checkJars() {
 		jar="${found#*--}"
 
 		if [ -n "${UNZIP}" ]; then
-			jarjar="$(${UNZIP} -l "${jar}" | awk '/^ .*log4j.*[jw]ar$/ { print $NF; }')"
+			jarjar="$(${UNZIP} -l "${jar}" | awk '/^ .*log4j.*[ejw]ar$/ { print $NF; }')"
 			if [ -n "${jarjar}" ]; then
 				extractAndInspect "${jar}" "${jarjar}" ${pid}
 			fi
@@ -293,9 +294,9 @@ checkProcesses() {
 	verbose "Checking running processes..." 3
 	local lsof="$(which lsof 2>/dev/null || true)"
 	if [ -z "${lsof}" ]; then
-		jars="$(ps -o pid,command= -wwwax | awk '/[jw]ar$/ { print $1 "--" $NF; }' | uniq)"
+		jars="$(ps -o pid,command= -wwwax | awk '/[ejw]ar$/ { print $1 "--" $NF; }' | uniq)"
 	else
-		jars="$(${lsof} -c java | awk '/REG.*[jw]ar$/ { print $2 "--" $NF; }' | uniq)"
+		jars="$(${lsof} -c java | awk '/REG.*[ejw]ar$/ { print $2 "--" $NF; }' | uniq)"
 	fi
 	FOUND_JARS="${FOUND_JARS:+${FOUND_JARS} }${jars}"
 }
@@ -332,7 +333,7 @@ fixJars() {
 	local jar
 
 	for jar in ${SUSPECT_JARS}; do
-		if expr "${jar}" : ".*[jw]ar:" >/dev/null; then
+		if expr "${jar}" : ".*[ejw]ar:" >/dev/null; then
 			warn "Unable to fix '${jar} -- it's a jar inside another jar."
 			continue
 		fi
