@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 #
 # Originally written by Jan Schaumann
 # <jans@yahooinc.com> in December 2021.
@@ -22,6 +22,8 @@
 # CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing
 # permissions and limitations under the License.
+
+# jbrodsky@splunk.com: added timestamp and IP to output 16 DEC 2021
 
 
 set -eu
@@ -105,7 +107,7 @@ checkFilesystem() {
 	for class in ${classes}; do
 		okVersion="$(checkFixedVersion "${class}")"
 		if [ -z "${okVersion}" ]; then
-			log "Possibly vulnerable class ${class}."
+			log "Possibly VULNERABLE_CLASS=${class}."
 			SUSPECT_CLASSES="${SUSPECT_CLASSES:+${SUSPECT_CLASSES} }${class}"
 		fi
 	done
@@ -193,13 +195,13 @@ checkInJar() {
 		match="$(echo "${jar}" | sed -n -e "s|.*/\(${KNOWN_DISABLED}[0-9.]*.jar\)$|\1|p")"
 		if [ -n "${match}" -o -n "${okVersion}" ]; then
 			if [ -n "${flags}" ]; then
-				log "Normally non-vulnerable archive '${jar}'${msg} found, but ${flags}!"
+				log "Normally NON-VULNERABLE_ARCHIVE='${jar}'${msg} found, but ${flags}!"
 			fi
 			verbose "Allowing archive with known disabled JNDI Lookup." 6
 			return
 		fi
 		if [ -z "${flags}" ]; then
-			log "Possibly vulnerable archive '${jar}'${msg}."
+			log "Possibly VULNERABLE_ARCHIVE='${jar}'${msg}."
 		fi
 		SUSPECT_JARS="${SUSPECT_JARS} ${thisJar}"
 	fi
