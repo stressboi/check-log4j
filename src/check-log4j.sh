@@ -72,7 +72,7 @@ SUSPECT_PACKAGES=""
 UNZIP="$(which unzip 2>/dev/null || true)"
 VERBOSITY=0
 
-LOGPREFIX="${DATETIME} ${IPADD} ${PROGNAME} ${VERSION} ${HOSTNAME:-"localhost"}"
+LOGPREFIX="${DATETIME} IP=${IPADD} ${PROGNAME} ${VERSION} ${HOSTNAME:-"localhost"}"
 
 ###
 ### Functions
