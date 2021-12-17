@@ -33,6 +33,10 @@ umask 077
 ### Globals
 ###
 
+# set a date format so we can output a date for each line
+DATETIME=$(date '+%Y-%m-%d %H:%M:%S %Z')
+# what's the IP address of the machine?
+IPADD=$(hostname -I)
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 
 # We broadly only care about versions >= 2.16.
@@ -66,7 +70,7 @@ SUSPECT_PACKAGES=""
 UNZIP="$(which unzip 2>/dev/null || true)"
 VERBOSITY=0
 
-LOGPREFIX="${PROGNAME} ${VERSION} ${HOSTNAME:-"localhost"}"
+LOGPREFIX="${DATETIME} ${IPADD} ${PROGNAME} ${VERSION} ${HOSTNAME:-"localhost"}"
 
 ###
 ### Functions
